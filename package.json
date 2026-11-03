@@ -1,13 +1,19 @@
 {
   "name": "edutrack-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Academic monitoring platform for teachers",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nodejs",
+    "express",
+    "education",
+    "api"
+  ],
+  "author": "GuiKotoski",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
