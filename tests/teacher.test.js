@@ -67,5 +67,4 @@ describe("Teacher Endpoints", () => {
       expect(response.statusCode).toBe(204);
     });
   });
-
 });
