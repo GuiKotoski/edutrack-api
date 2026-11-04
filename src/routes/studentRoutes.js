@@ -8,4 +8,9 @@ const studentController = require(
 
 router.get("/", studentController.getStudents);
 
+router.get(
+  "/:id",
+  studentController.getStudentById
+);
+
 module.exports = router;

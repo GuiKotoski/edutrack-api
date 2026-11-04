@@ -2,13 +2,19 @@ const students = [
   {
     id: 1,
     name: "João Santos",
-    email : "joao.santos@example.com",
     age: 15,
   },
 ];
 
 const getAllStudents = () => students;
 
+const getStudentById = (id) => {
+  return students.find(
+    (student) => student.id === id
+  );
+};
+
 module.exports = {
   getAllStudents,
+  getStudentById,
 };
