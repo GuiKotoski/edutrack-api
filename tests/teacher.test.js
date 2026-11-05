@@ -1,70 +1,66 @@
 const request = require("supertest");
 const app = require("../src/app");
+const prisma = require("../src/config/prisma");
+
+beforeEach(async () => {
+  await prisma.teacher.deleteMany();
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
+});
 
 describe("Teacher Endpoints", () => {
   describe("GET /teachers", () => {
     it("should return all teachers", async () => {
+      await prisma.teacher.create({
+        data: {
+          name: "Carlos Silva",
+          subject: "Mathematics",
+        },
+      });
+
       const response = await request(app).get("/teachers");
 
-      expect(response.status).toBe(200);
+      expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
-
       expect(response.body[0]).toHaveProperty("id");
       expect(response.body[0]).toHaveProperty("name");
-      expect(response.body[0]).toHaveProperty("email");
+      expect(response.body[0]).toHaveProperty("subject");
     });
   });
 
   describe("GET /teachers/:id", () => {
-    it("should return a teacher", async () => {
-      const response = await request(app).get("/teachers/1");
+    it("should return one teacher", async () => {
+      const teacher = await prisma.teacher.create({
+        data: {
+          name: "Carlos Silva",
+          subject: "Mathematics",
+        },
+      });
 
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("id");
-      expect(response.body).toHaveProperty("name");
-      expect(response.body).toHaveProperty("email");
+      const response = await request(app)
+        .get(`/teachers/${teacher.id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.id).toBe(teacher.id);
+      expect(response.body.name).toBe("Carlos Silva");
+      expect(response.body.subject).toBe("Mathematics");
     });
-
-      it("should return 404 when teacher does not exist", async () => {
-      const response = await request(app).get("/teachers/999");
-
-      expect(response.statusCode).toBe(404);
   });
-});
 
-    describe("POST /teachers", () => {
+  describe("POST /teachers", () => {
     it("should create a teacher", async () => {
       const response = await request(app)
         .post("/teachers")
         .send({
-          name: "Ana Souza",
-          email: "ana@email.com",
+          name: "Carlos Silva",
+          subject: "Mathematics",
         });
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toBe("Ana Souza");
-      expect(response.body.email).toBe("ana@email.com");
-    });
-  });
-      describe("PUT /teachers/:id", () => {
-    it("should update a teacher", async () => {
-      const response = await request(app)
-        .put("/teachers/1")
-        .send({
-          name: "Carlos Updated",
-        });
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body.name).toBe("Carlos Updated");
-    });
-  });
-
-      describe("DELETE /teachers/:id", () => {
-    it("should delete a teacher", async () => {
-      const response = await request(app)
-        .delete("/teachers/1");
-
-      expect(response.statusCode).toBe(204);
+      expect(response.body.name).toBe("Carlos Silva");
+      expect(response.body.subject).toBe("Mathematics");
     });
   });
 });

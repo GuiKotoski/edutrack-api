@@ -1,47 +1,41 @@
-const teachers = [
-  {
-    id: 1,
-    name: "Carlos Silva",
-    email: "carlos@email.com",
-  },
-];
+const prisma = require("../config/prisma");
 
-const getAllTeachers = () => teachers;
-
-const getTeacherById = (id) =>
-  teachers.find((teacher) => teacher.id === id);
-
-const createTeacher = ({ name, email }) => {
-  const newTeacher = {
-    id: teachers.length + 1,
-    name,
-    email,
-  };
-
-  teachers.push(newTeacher);
-
-  return newTeacher;
+const getAllTeachers = async () => {
+  return prisma.teacher.findMany();
 };
 
-const updateTeacher = (id, data) => {
-  const teacher = teachers.find((t) => t.id === id);
-
-  if (!teacher) return null;
-
-  teacher.name = data.name ?? teacher.name;
-  teacher.email = data.email ?? teacher.email;
-
-  return teacher;
+const getTeacherById = async (id) => {
+  return prisma.teacher.findUnique({
+    where: {
+      id: Number(id),
+    },
+  });
 };
 
-const deleteTeacher = (id) => {
-  const index = teachers.findIndex((t) => t.id === id);
+const createTeacher = async ({ name, subject }) => {
+  return prisma.teacher.create({
+    data: {
+      name,
+      subject,
+    },
+  });
+};
 
-  if (index === -1) return false;
+const updateTeacher = async (id, data) => {
+  return prisma.teacher.update({
+    where: {
+      id: Number(id),
+    },
+    data,
+  });
+};
 
-  teachers.splice(index, 1);
-
-  return true;
+const deleteTeacher = async (id) => {
+  return prisma.teacher.delete({
+    where: {
+      id: Number(id),
+    },
+  });
 };
 
 module.exports = {
