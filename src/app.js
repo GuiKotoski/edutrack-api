@@ -1,4 +1,5 @@
 const express = require("express");
+const authRoutes = require("./routes/authRoutes");
 
 const teacherRoutes = require(
   "./routes/teacherRoutes"
@@ -19,7 +20,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/teachers", teacherRoutes);
-
 app.use("/students", studentRoutes);
+app.use("/auth", authRoutes);
 
 module.exports = app;

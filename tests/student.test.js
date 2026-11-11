@@ -2,8 +2,28 @@ const request = require("supertest");
 const app = require("../src/app");
 const prisma = require("../src/config/prisma");
 
+let token;
+
 beforeEach(async () => {
+  await prisma.user.deleteMany();
   await prisma.student.deleteMany();
+
+  await request(app)
+    .post("/auth/register")
+    .send({
+      name: "Test User",
+      email: "test@email.com",
+      password: "123456",
+    });
+
+  const loginResponse = await request(app)
+    .post("/auth/login")
+    .send({
+      email: "test@email.com",
+      password: "123456",
+    });
+
+  token = loginResponse.body.token;
 });
 
 afterAll(async () => {
@@ -20,7 +40,9 @@ describe("Student Endpoints", () => {
         },
       });
 
-      const response = await request(app).get("/students");
+      const response = await request(app)
+        .get("/students")
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
@@ -40,7 +62,8 @@ describe("Student Endpoints", () => {
       });
 
       const response = await request(app)
-        .get(`/students/${student.id}`);
+        .get(`/students/${student.id}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.id).toBe(student.id);
@@ -52,6 +75,7 @@ describe("Student Endpoints", () => {
     it("should create a student", async () => {
       const response = await request(app)
         .post("/students")
+        .set("Authorization", `Bearer ${token}`)
         .send({
           name: "Pedro",
           age: 17,
