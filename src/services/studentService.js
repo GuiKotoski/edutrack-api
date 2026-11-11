@@ -21,6 +21,29 @@ const createStudent = async ({ name, age }) => {
   });
 };
 
+const createStudentForTeacher = async (
+  teacherId,
+  { name, age }
+) => {
+  const teacher = await prisma.teacher.findUnique({
+    where: {
+      id: Number(teacherId),
+    },
+  });
+
+  if (!teacher) {
+    throw new Error("Teacher not found");
+  }
+
+  return prisma.student.create({
+    data: {
+      name,
+      age,
+      teacherId: Number(teacherId),
+    },
+  });
+};
+
 const updateStudent = async (id, data) => {
   return prisma.student.update({
     where: {
@@ -42,6 +65,7 @@ module.exports = {
   getAllStudents,
   getStudentById,
   createStudent,
+  createStudentForTeacher,
   updateStudent,
   deleteStudent,
 };

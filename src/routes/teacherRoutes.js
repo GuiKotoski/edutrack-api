@@ -16,6 +16,18 @@ router.get(
   teacherController.getTeacherById
 );
 
+router.get(
+  "/:id/students",
+  authenticateToken,
+  teacherController.getTeacherStudents
+);
+
+router.post(
+  "/:id/students",
+  authenticateToken,
+  teacherController.addStudentToTeacher
+);
+
 router.post(
   "/",
   authenticateToken,

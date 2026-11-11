@@ -1,5 +1,4 @@
-const prisma = require("../config/prisma");
-const teacherService = require("../services/teacherService"); 
+const teacherService = require("../services/teacherService");
 
 const getAllTeachers = async (req, res) => {
   try {
@@ -13,55 +12,116 @@ const getAllTeachers = async (req, res) => {
 const getTeacherById = async (req, res) => {
   try {
     const teacher = await teacherService.getTeacherById(req.params.id);
+
     if (!teacher) {
-      return res.status(404).json({ error: "Teacher not found" });
+      return res.status(404).json({
+        error: "Teacher not found",
+      });
     }
+
     res.json(teacher);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
+const getTeacherStudents = async (req, res) => {
+  try {
+    const students = await teacherService.getTeacherStudents(
+      req.params.id
+    );
+
+    res.json(students);
+  } catch (error) {
+    if (error.message === "Teacher not found") {
+      return res.status(404).json({
+        error: error.message,
+      });
+    }
+
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
+const addStudentToTeacher = async (req, res) => {
+  try {
+    const student =
+      await teacherService.addStudentToTeacher(
+        req.params.id,
+        req.body
+      );
+
+    res.status(201).json(student);
+  } catch (error) {
+    if (
+      error.message === "Teacher not found" ||
+      error.message === "Name and age are required"
+    ) {
+      return res.status(400).json({
+        error: error.message,
+      });
+    }
+
+    res.status(500).json({
+      error: error.message,
+    });
   }
 };
 
 const createTeacher = async (req, res) => {
   try {
-    const newTeacher = await teacherService.createTeacher(req.body);
-    res.status(201).json(newTeacher);
+    const teacher = await teacherService.createTeacher(
+      req.body
+    );
+
+    res.status(201).json(teacher);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+    });
   }
 };
 
-const updateTeacher = async (req, res   ) => {
+const updateTeacher = async (req, res) => {
   try {
-    const updatedTeacher = await teacherService.updateTeacher(req.params.id, req.body);
-    res.json(updatedTeacher);
+    const teacher =
+      await teacherService.updateTeacher(
+        req.params.id,
+        req.body
+      );
+
+    res.json(teacher);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+    });
   }
 };
 
 const deleteTeacher = async (req, res) => {
   try {
-    await teacherService.deleteTeacher(req.params.id);
+    await teacherService.deleteTeacher(
+      req.params.id
+    );
+
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+    });
   }
 };
-
-console.log({
-  getAllTeachers,
-  getTeacherById,
-  createTeacher,
-  updateTeacher,
-  deleteTeacher,
-});
 
 module.exports = {
   getAllTeachers,
   getTeacherById,
+  getTeacherStudents,
+  addStudentToTeacher,
   createTeacher,
   updateTeacher,
   deleteTeacher,
 };
-

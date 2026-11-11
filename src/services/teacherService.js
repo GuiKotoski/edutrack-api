@@ -9,6 +9,9 @@ const getTeacherById = async (id) => {
     where: {
       id: Number(id),
     },
+    include: {
+      students: true,
+    },
   });
 };
 
@@ -38,10 +41,56 @@ const deleteTeacher = async (id) => {
   });
 };
 
+const getTeacherStudents = async (id) => {
+  const teacher = await prisma.teacher.findUnique({
+    where: {
+      id: Number(id),
+    },
+    include: {
+      students: true,
+    },
+  });
+
+  if (!teacher) {
+    throw new Error("Teacher not found");
+  }
+
+  return teacher.students;
+};
+
+const addStudentToTeacher = async (
+  teacherId,
+  studentData
+) => {
+  const teacher = await prisma.teacher.findUnique({
+    where: {
+      id: Number(teacherId),
+    },
+  });
+
+  if (!teacher) {
+    throw new Error("Teacher not found");
+  }
+
+  if (!studentData.name || !studentData.age) {
+    throw new Error("Name and age are required");
+  }
+
+  return prisma.student.create({
+    data: {
+      name: studentData.name,
+      age: Number(studentData.age),
+      teacherId: Number(teacherId),
+    },
+  });
+};
+
 module.exports = {
   getAllTeachers,
   getTeacherById,
   createTeacher,
   updateTeacher,
   deleteTeacher,
+  getTeacherStudents,
+  addStudentToTeacher,
 };
