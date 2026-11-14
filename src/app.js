@@ -8,6 +8,7 @@ const teacherRoutes = require(
 const studentRoutes = require(
   "./routes/studentRoutes"
 );
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -22,5 +23,9 @@ app.get("/", (req, res) => {
 app.use("/teachers", teacherRoutes);
 app.use("/students", studentRoutes);
 app.use("/auth", authRoutes);
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+app.use(errorHandler);
 
 module.exports = app;

@@ -52,7 +52,9 @@ const getTeacherStudents = async (id) => {
   });
 
   if (!teacher) {
-    throw new Error("Teacher not found");
+    const error = new Error("Teacher not found");
+    error.statusCode = 404;
+    throw error;
   }
 
   return teacher.students;
@@ -69,11 +71,9 @@ const addStudentToTeacher = async (
   });
 
   if (!teacher) {
-    throw new Error("Teacher not found");
-  }
-
-  if (!studentData.name || !studentData.age) {
-    throw new Error("Name and age are required");
+    const error = new Error("Teacher not found");
+    error.statusCode = 404;
+    throw error;
   }
 
   return prisma.student.create({

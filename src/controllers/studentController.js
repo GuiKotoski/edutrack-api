@@ -1,67 +1,22 @@
 const studentService = require("../services/studentService");
 
-const getAllStudents = async (req, res) => {
-  try {
-    const students = await studentService.getAllStudents();
-    res.json(students);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+const getAllStudents = async (req, res) => res.json(await studentService.getAllStudents());
 
 const getStudentById = async (req, res) => {
-  try {
-    const student = await studentService.getStudentById(req.params.id);
-
-    if (!student) {
-      return res.status(404).json({
-        error: "Student not found",
-      });
-    }
-
-    res.json(student);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const student = await studentService.getStudentById(req.params.id);
+  if (!student) return res.status(404).json({ message: "Student not found" });
+  return res.json(student);
 };
 
-const createStudent = async (req, res) => {
-  try {
-    const student = await studentService.createStudent(req.body);
+const createStudent = async (req, res) =>
+  res.status(201).json(await studentService.createStudent(req.body));
 
-    res.status(201).json(student);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const updateStudent = async (req, res) => {
-  try {
-    const student = await studentService.updateStudent(
-      req.params.id,
-      req.body
-    );
-
-    res.json(student);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+const updateStudent = async (req, res) =>
+  res.json(await studentService.updateStudent(req.params.id, req.body));
 
 const deleteStudent = async (req, res) => {
-  try {
-    await studentService.deleteStudent(req.params.id);
-
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  await studentService.deleteStudent(req.params.id);
+  return res.status(204).send();
 };
 
-module.exports = {
-  getAllStudents,
-  getStudentById,
-  createStudent,
-  updateStudent,
-  deleteStudent,
-};
+module.exports = { getAllStudents, getStudentById, createStudent, updateStudent, deleteStudent };
