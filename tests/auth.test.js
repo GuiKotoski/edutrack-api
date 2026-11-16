@@ -1,6 +1,7 @@
 const request = require("supertest");
 const app = require("../src/app");
 const prisma = require("../src/config/prisma");
+const { makeUser } = require("./factories/userFactory");
 
 describe("Authentication", () => {
   beforeEach(async () => {
@@ -12,73 +13,51 @@ describe("Authentication", () => {
   });
 
   test("should register a new user", async () => {
+    const user = makeUser();
     const response = await request(app)
       .post("/auth/register")
-      .send({
-        name: "Guilherme",
-        email: "gui@email.com",
-        password: "123456",
-      });
+      .send(user);
 
     expect(response.statusCode).toBe(201);
-    expect(response.body.email).toBe("gui@email.com");
+    expect(response.body.email).toBe(user.email);
   });
 
   test("should not allow duplicate email", async () => {
+    const user = makeUser();
     await request(app)
       .post("/auth/register")
-      .send({
-        name: "Guilherme",
-        email: "gui@email.com",
-        password: "123456",
-      });
+      .send(user);
 
     const response = await request(app)
       .post("/auth/register")
-      .send({
-        name: "Outro Usuario",
-        email: "gui@email.com",
-        password: "654321",
-      });
+      .send(makeUser({ email: user.email, password: "654321" }));
 
     expect(response.statusCode).toBe(400);
   });
 
   test("should login successfully", async () => {
+    const user = makeUser();
     await request(app)
       .post("/auth/register")
-      .send({
-        name: "Guilherme",
-        email: "gui@email.com",
-        password: "123456",
-      });
+      .send(user);
 
     const response = await request(app)
       .post("/auth/login")
-      .send({
-        email: "gui@email.com",
-        password: "123456",
-      });
+      .send({ email: user.email, password: user.password });
 
     expect(response.statusCode).toBe(200);
     expect(response.body.token).toBeDefined();
   });
 
   test("should reject invalid password", async () => {
+    const user = makeUser();
     await request(app)
       .post("/auth/register")
-      .send({
-        name: "Guilherme",
-        email: "gui@email.com",
-        password: "123456",
-      });
+      .send(user);
 
     const response = await request(app)
       .post("/auth/login")
-      .send({
-        email: "gui@email.com",
-        password: "senhaerrada",
-      });
+      .send({ email: user.email, password: "senhaerrada" });
 
     expect(response.statusCode).toBe(401);
   });
@@ -102,20 +81,14 @@ describe("Authentication", () => {
   });
 
   test("should allow access with valid token", async () => {
+    const user = makeUser();
     await request(app)
       .post("/auth/register")
-      .send({
-        name: "Guilherme",
-        email: "gui@email.com",
-        password: "123456",
-      });
+      .send(user);
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({
-        email: "gui@email.com",
-        password: "123456",
-      });
+      .send({ email: user.email, password: user.password });
 
     const token = loginResponse.body.token;
 

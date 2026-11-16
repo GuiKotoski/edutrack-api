@@ -1,6 +1,8 @@
 const request = require("supertest");
 const app = require("../src/app");
 const prisma = require("../src/config/prisma");
+const { makeUser } = require("./factories/userFactory");
+const { makeStudent } = require("./factories/studentFactory");
 
 let token;
 
@@ -8,20 +10,14 @@ beforeEach(async () => {
   await prisma.user.deleteMany();
   await prisma.student.deleteMany();
 
+  const user = makeUser();
   await request(app)
     .post("/auth/register")
-    .send({
-      name: "Test User",
-      email: "test@email.com",
-      password: "123456",
-    });
+    .send(user);
 
   const loginResponse = await request(app)
     .post("/auth/login")
-    .send({
-      email: "test@email.com",
-      password: "123456",
-    });
+    .send({ email: user.email, password: user.password });
 
   token = loginResponse.body.token;
 });
@@ -34,10 +30,7 @@ describe("Student Endpoints", () => {
   describe("GET /students", () => {
     it("should return all students", async () => {
       await prisma.student.create({
-        data: {
-          name: "João Santos",
-          age: 15,
-        },
+        data: makeStudent(),
       });
 
       const response = await request(app)
@@ -55,10 +48,7 @@ describe("Student Endpoints", () => {
   describe("GET /students/:id", () => {
     it("should return one student", async () => {
       const student = await prisma.student.create({
-        data: {
-          name: "Maria",
-          age: 16,
-        },
+        data: makeStudent({ name: "Maria", age: 16 }),
       });
 
       const response = await request(app)
@@ -76,10 +66,7 @@ describe("Student Endpoints", () => {
       const response = await request(app)
         .post("/students")
         .set("Authorization", `Bearer ${token}`)
-        .send({
-          name: "Pedro",
-          age: 17,
-        });
+        .send(makeStudent({ name: "Pedro", age: 17 }));
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toBe("Pedro");

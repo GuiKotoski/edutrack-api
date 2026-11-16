@@ -1,6 +1,8 @@
 const request = require("supertest");
 const app = require("../src/app");
 const prisma = require("../src/config/prisma");
+const { makeUser } = require("./factories/userFactory");
+const { makeTeacher } = require("./factories/teacherFactory");
 
 let token;
 
@@ -8,20 +10,14 @@ beforeEach(async () => {
   await prisma.user.deleteMany();
   await prisma.teacher.deleteMany();
 
+  const user = makeUser();
   await request(app)
     .post("/auth/register")
-    .send({
-      name: "Test User",
-      email: "test@email.com",
-      password: "123456",
-    });
+    .send(user);
 
   const loginResponse = await request(app)
     .post("/auth/login")
-    .send({
-      email: "test@email.com",
-      password: "123456",
-    });
+    .send({ email: user.email, password: user.password });
 
   token = loginResponse.body.token;
 });
@@ -34,10 +30,7 @@ describe("Teacher Endpoints", () => {
   describe("GET /teachers", () => {
     it("should return all teachers", async () => {
       await prisma.teacher.create({
-        data: {
-          name: "Carlos Silva",
-          subject: "Mathematics",
-        },
+        data: makeTeacher(),
       });
 
       const response = await request(app)
@@ -55,10 +48,7 @@ describe("Teacher Endpoints", () => {
   describe("GET /teachers/:id", () => {
     it("should return one teacher", async () => {
       const teacher = await prisma.teacher.create({
-        data: {
-          name: "Carlos Silva",
-          subject: "Mathematics",
-        },
+        data: makeTeacher({ name: "Carlos Silva", subject: "Mathematics" }),
       });
 
       const response = await request(app)
@@ -77,10 +67,7 @@ describe("Teacher Endpoints", () => {
       const response = await request(app)
         .post("/teachers")
         .set("Authorization", `Bearer ${token}`)
-        .send({
-          name: "Carlos Silva",
-          subject: "Mathematics",
-        });
+        .send(makeTeacher({ name: "Carlos Silva", subject: "Mathematics" }));
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toBe("Carlos Silva");
