@@ -223,14 +223,15 @@ O alerta [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx
 - configurar backups criptografados e restritos, e testar a restauração;
 - definir quais dados de alunos são necessários, quem pode acessá-los e por quanto tempo serão mantidos; preparar logs de auditoria sem senhas, tokens ou dados pessoais desnecessários e um procedimento para incidentes.
 
-### Sprint 12 — Deploy ⏳ Planejada
+### Sprint 12 — Deploy 🔄 Em andamento
 
-Publicar a API e o banco de dados em uma plataforma de hospedagem.
+Preparar um deploy de staging para portfólio, usando apenas dados fictícios, e validar a API e o banco hospedados. A configuração inicial será para Railway Free, sem tratar esse plano como adequado a dados reais ou disponibilidade de produção.
 
-**Plataformas em avaliação:**
+**Plataforma escolhida para staging:** Railway Free. O plano concede US$ 1 mensal em uso e interrompe os serviços ao consumir o limite; workloads podem dormir. O PostgreSQL gratuito tem volume de 0,5 GB. Use somente dados fictícios e não dependa desse ambiente como armazenamento permanente nem como backup testado.
 
-- Render;
-- Railway.
+Configure o health check e o comando de migration pré-deploy nas opções do serviço Railway. O CLI do Prisma é obtido apenas no contêiner isolado dessa etapa; a imagem que atende requisições não o inclui. O schema e as migrations ficam disponíveis na imagem para a execução controlada. O Railway está migrando sua configuração versionada para IaC TypeScript; nesta primeira configuração, os comandos ficam no painel.
+
+**Critérios de saída:** deploy HTTPS acessível, conexão da API ao PostgreSQL por rede privada, migrations aplicadas, endpoints básicos validados com dados fictícios, segredos configurados no painel e limite de instâncias em uma para manter o rate limit em processo eficaz. Antes de uso comercial: escolher plano com retenção e backups, testar restauração e concluir os itens operacionais da Sprint 11.5.
 
 ### Sprint 13 — Sistema de notas ⏳ Planejada
 

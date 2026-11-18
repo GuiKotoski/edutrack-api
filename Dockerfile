@@ -24,6 +24,8 @@ RUN npm ci --omit=dev --ignore-scripts
 
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY src ./src
+COPY prisma/schema.prisma ./prisma/schema.prisma
+COPY prisma/migrations ./prisma/migrations
 COPY docs/openapi.json ./docs/openapi.json
 
 ENV NODE_ENV=production

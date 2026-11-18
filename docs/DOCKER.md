@@ -65,3 +65,11 @@ O `.env` é ignorado pelo Git e pelo Docker build. Não use os valores de exempl
 - o limite de 10 solicitações por IP a cada 15 minutos inclui tentativas de cadastro e login, inclusive as bem-sucedidas. Ele é local ao processo; mantenha uma única instância até configurar um armazenamento compartilhado de rate limit.
 
 A migration de propriedade mantém registros antigos com `ownerId` vazio. Eles não aparecem nas rotas autenticadas; associe-os a uma conta por um processo administrativo controlado antes de voltar a utilizá-los.
+
+## Staging gratuito no Railway
+
+Na configuração do serviço Railway, use o Dockerfile do repositório, defina o health check como `/` e o comando pré-deploy como `npx --yes prisma@6.19.3 migrate deploy`. A etapa pré-deploy baixa a versão fixada do CLI Prisma no contêiner isolado; a imagem que serve a API mantém apenas dependências de runtime. O schema e as migrations estão incluídos na imagem para essa etapa. Configure esses campos no painel: a configuração versionada antiga do Railway está sendo descontinuada para novos serviços.
+
+No Railway, crie um projeto a partir do repositório, adicione um serviço PostgreSQL e conecte `DATABASE_URL` no serviço da API à variável interna do banco (por exemplo, `${{Postgres.DATABASE_URL}}`, se o serviço do banco se chamar `Postgres`). Configure `JWT_SECRET` como segredo aleatório de pelo menos 32 caracteres, `JWT_EXPIRES_IN=15m` e `REQUIRE_HTTPS=true`. O Railway fornece `PORT` e HTTPS para o domínio público do serviço.
+
+O plano Free inclui US$ 1 de uso por ciclo e pode suspender os serviços quando o crédito acabar; também pode dormir quando inativo. O banco tem volume de 0,5 GB, mas o limite pode deixar a aplicação indisponível. Use somente dados fictícios nesse staging e não dependa dele como armazenamento permanente ou como backup testado. Mantenha uma réplica da API enquanto o rate limit estiver guardado em memória.
