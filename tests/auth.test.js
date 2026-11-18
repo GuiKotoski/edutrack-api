@@ -20,6 +20,22 @@ describe("Authentication", () => {
 
     expect(response.statusCode).toBe(201);
     expect(response.body.email).toBe(user.email);
+    expect(response.body).not.toHaveProperty("password");
+    const savedUser = await prisma.user.findUnique({ where: { email: user.email } });
+    expect(savedUser.password).not.toBe(user.password);
+  });
+
+  test("should reject invalid registration and login payloads", async () => {
+    const registration = await request(app).post("/auth/register").send({
+      name: "A", email: "not-an-email", password: "123",
+    });
+    const login = await request(app).post("/auth/login").send({
+      email: "not-an-email", password: "123",
+    });
+
+    expect(registration.statusCode).toBe(400);
+    expect(registration.body.message).toBe("Validation failed");
+    expect(login.statusCode).toBe(400);
   });
 
   test("should not allow duplicate email", async () => {

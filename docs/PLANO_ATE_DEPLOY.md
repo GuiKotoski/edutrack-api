@@ -164,7 +164,7 @@ CRUD completo:
 
 ## Roadmap de sprints
 
-> **Sprint atual: 8.5 — Faker e factories**
+> **Sprint atual: 10 — Swagger/OpenAPI**
 
 ### Sprint 8 — Zod e tratamento de erros ✅ Concluída
 
@@ -176,17 +176,17 @@ CRUD completo:
 - validar os dados de professores, alunos e associações;
 - centralizar o tratamento de erros.
 
-### Sprint 8.5 — Faker e factories 🔄 Em andamento
+### Sprint 8.5 — Faker e factories ✅ Concluída
 
 **Objetivo:** automatizar a geração de dados para testes.
 
 **Tecnologia:** `@faker-js/faker`.
 
-### Sprint 9 — Testes completos ⏳ Planejada
+### Sprint 9 — Testes completos ✅ Concluída
 
-**Cobertura prevista:** autenticação, professores, alunos e relacionamentos.
+**Cobertura:** autenticação, professores, alunos, relacionamentos, validação e erros.
 
-**Objetivo:** cobrir os fluxos principais e os cenários de erro. Meta inicial: pelo menos 80% de cobertura.
+**Objetivo:** cobrir os fluxos principais e os cenários de erro. Meta inicial: pelo menos 80% de cobertura. A suíte alcançou 95,94% de statements e 96,31% de linhas.
 
 ### Sprint 10 — Swagger/OpenAPI ⏳ Planejada
 
