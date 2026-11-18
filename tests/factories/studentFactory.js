@@ -1,9 +1,10 @@
-const { faker } = require("@faker-js/faker");
+const { randomUUID } = require("node:crypto");
 
 function makeStudent(overrides = {}) {
+  const id = randomUUID().slice(0, 8);
   return {
-    name: faker.person.fullName(),
-    age: faker.number.int({ min: 10, max: 18 }),
+    name: `Student ${id}`,
+    age: 15,
     ...overrides,
   };
 }

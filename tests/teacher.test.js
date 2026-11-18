@@ -5,6 +5,7 @@ const { makeUser } = require("./factories/userFactory");
 const { makeTeacher } = require("./factories/teacherFactory");
 
 let token;
+let ownerId;
 
 beforeEach(async () => {
   await prisma.student.deleteMany();
@@ -15,6 +16,7 @@ beforeEach(async () => {
   await request(app)
     .post("/auth/register")
     .send(user);
+  ownerId = (await prisma.user.findUnique({ where: { email: user.email } })).id;
 
   const loginResponse = await request(app)
     .post("/auth/login")
@@ -28,10 +30,32 @@ afterAll(async () => {
 });
 
 describe("Teacher Endpoints", () => {
+  it("isolates teacher records between accounts", async () => {
+    const other = makeUser();
+    await request(app).post("/auth/register").send(other);
+    const otherId = (await prisma.user.findUnique({ where: { email: other.email } })).id;
+    const otherTeacher = await prisma.teacher.create({
+      data: { ...makeTeacher(), ownerId: otherId },
+    });
+
+    const list = await request(app).get("/teachers").set("Authorization", `Bearer ${token}`);
+    const get = await request(app).get(`/teachers/${otherTeacher.id}`).set("Authorization", `Bearer ${token}`);
+    const update = await request(app).put(`/teachers/${otherTeacher.id}`)
+      .set("Authorization", `Bearer ${token}`).send({ subject: "Changed" });
+    const remove = await request(app).delete(`/teachers/${otherTeacher.id}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(list.body).toEqual([]);
+    expect(get.statusCode).toBe(404);
+    expect(update.statusCode).toBe(404);
+    expect(remove.statusCode).toBe(404);
+    expect(await prisma.teacher.findUnique({ where: { id: otherTeacher.id } })).not.toBeNull();
+  });
+
   describe("GET /teachers", () => {
     it("should return all teachers", async () => {
       await prisma.teacher.create({
-        data: makeTeacher(),
+        data: { ...makeTeacher(), ownerId },
       });
 
       const response = await request(app)
@@ -63,7 +87,7 @@ describe("Teacher Endpoints", () => {
   describe("GET /teachers/:id", () => {
     it("should return one teacher", async () => {
       const teacher = await prisma.teacher.create({
-        data: makeTeacher({ name: "Carlos Silva", subject: "Mathematics" }),
+        data: { ...makeTeacher({ name: "Carlos Silva", subject: "Mathematics" }), ownerId },
       });
 
       const response = await request(app)
@@ -100,7 +124,7 @@ describe("Teacher Endpoints", () => {
 
   describe("PUT and DELETE /teachers/:id", () => {
     it("should update a teacher", async () => {
-      const teacher = await prisma.teacher.create({ data: makeTeacher() });
+      const teacher = await prisma.teacher.create({ data: { ...makeTeacher(), ownerId } });
       const response = await request(app)
         .put(`/teachers/${teacher.id}`)
         .set("Authorization", `Bearer ${token}`)
@@ -125,7 +149,7 @@ describe("Teacher Endpoints", () => {
     });
 
     it("should delete a teacher", async () => {
-      const teacher = await prisma.teacher.create({ data: makeTeacher() });
+      const teacher = await prisma.teacher.create({ data: { ...makeTeacher(), ownerId } });
       const response = await request(app)
         .delete(`/teachers/${teacher.id}`)
         .set("Authorization", `Bearer ${token}`);
@@ -137,7 +161,7 @@ describe("Teacher Endpoints", () => {
 
   describe("teacher and student relationship", () => {
     it("should list and create students for a teacher", async () => {
-      const teacher = await prisma.teacher.create({ data: makeTeacher() });
+      const teacher = await prisma.teacher.create({ data: { ...makeTeacher(), ownerId } });
       const created = await request(app)
         .post(`/teachers/${teacher.id}/students`)
         .set("Authorization", `Bearer ${token}`)

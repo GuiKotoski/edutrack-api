@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER no .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
     ports:
-      - "127.0.0.1:${DB_PORT:-5432}:5432"
+      - "127.0.0.1:${DB_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,8 +16,22 @@ services:
       timeout: 5s
       retries: 10
 
+  migrate:
+    build:
+      context: .
+      target: build
+    command: ["npx", "prisma", "migrate", "deploy"]
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Defina POSTGRES_USER no .env}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:?Defina POSTGRES_DB no .env}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+
   api:
-    build: .
+    build:
+      context: .
+      target: runtime
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -25,11 +39,12 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:?Defina POSTGRES_USER no .env}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:?Defina POSTGRES_DB no .env}?schema=public
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+      REQUIRE_HTTPS: ${REQUIRE_HTTPS:-false}
     ports:
-      - "127.0.0.1:${API_PORT:-3000}:3000"
+      - "127.0.0.1:${API_PORT:-3001}:3000"
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:

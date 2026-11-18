@@ -164,7 +164,7 @@ CRUD completo:
 
 ## Roadmap de sprints
 
-> **Sprint atual: 12 — Deploy**
+> **Sprint atual: 11.5 — Segurança**
 
 ### Sprint 8 — Zod e tratamento de erros ✅ Concluída
 
@@ -176,11 +176,11 @@ CRUD completo:
 - validar os dados de professores, alunos e associações;
 - centralizar o tratamento de erros.
 
-### Sprint 8.5 — Faker e factories ✅ Concluída
+### Sprint 8.5 — Factories de dados de teste ✅ Concluída
 
 **Objetivo:** automatizar a geração de dados para testes.
 
-**Tecnologia:** `@faker-js/faker`.
+**Implementação atual:** factories síncronas com identificadores únicos de `node:crypto`.
 
 ### Sprint 9 — Testes completos ✅ Concluída
 
@@ -196,7 +196,30 @@ Documentar os endpoints, parâmetros, respostas e exemplos de uso da API. A espe
 
 Containerizar a aplicação e documentar como executá-la localmente com seus serviços necessários. As instruções estão em `docs/DOCKER.md`; Docker Compose inicia a API e PostgreSQL.
 
-### Sprint 12 — Deploy 🔄 Próxima
+### Sprint 11.5 — Segurança 🔄 Em andamento
+
+**Objetivo:** proteger os dados acadêmicos e preparar a aplicação para um deploy seguro. Não publicar o EduTrack com dados reais até concluir e validar este escopo.
+
+**Estado:** controles de ownership, autenticação e rate limit implementados; migration aplicada e 38 testes passaram no ambiente local. A imagem de runtime da API separa o CLI do Prisma e reportou zero vulnerabilidades no build. A auditoria completa ainda aponta uma cadeia alta `prisma@6 → @prisma/config → deepmerge-ts` (contada em 3 entradas) e 19 moderadas na árvore de desenvolvimento. A tarefa de migration continua contendo o CLI vulnerável, mas roda isolada, sem porta pública e apenas com código revisado. A sprint continua aberta até validar os controles operacionais na hospedagem.
+
+#### Risco residual aceito para desenvolvimento
+
+O alerta [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx) descreve esgotamento de pilha ao mesclar objetos cíclicos recursivos. Esse requisito não pode ser produzido por um corpo JSON HTTP comum; o caminho afetado é a configuração processada pelo CLI do Prisma. Como o Prisma 7 não é compatível com a aplicação neste momento, mantemos o Prisma 6 e aceitamos temporariamente esse risco somente em desenvolvimento, testes e migrations controladas a partir do repositório revisado.
+
+**Controles compensatórios:** o CLI não está na imagem que serve requisições; a imagem de runtime foi auditada sem vulnerabilidades; a tarefa de migration não expõe portas e acessa o banco pela rede privada do Compose. Não usar a imagem de migration como serviço público nem processar configuração Prisma não revisada. Reavaliar este risco antes de qualquer deploy com dados reais ou quando houver correção compatível com Prisma 6.
+
+**Responsável pela revisão:** mantenedor do projeto. **Prazo:** antes da Sprint 12 — Deploy.
+
+**Escopo:**
+
+- vincular usuários aos professores ou instituições e aplicar autorização em todas as operações de leitura, criação, atualização e remoção;
+- cobrir com testes que uma conta não acessa nem altera os dados de outra;
+- exigir HTTPS, guardar `JWT_SECRET` e credenciais do banco no gerenciador de segredos da hospedagem, configurar expiração dos JWTs e manter o banco sem acesso público;
+- limitar tentativas de login e cadastro e revisar as vulnerabilidades das dependências antes da publicação;
+- configurar backups criptografados e restritos, e testar a restauração;
+- definir quais dados de alunos são necessários, quem pode acessá-los e por quanto tempo serão mantidos; preparar logs de auditoria sem senhas, tokens ou dados pessoais desnecessários e um procedimento para incidentes.
+
+### Sprint 12 — Deploy ⏳ Planejada
 
 Publicar a API e o banco de dados em uma plataforma de hospedagem.
 

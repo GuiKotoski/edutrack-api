@@ -5,6 +5,7 @@ const { makeUser } = require("./factories/userFactory");
 const { makeStudent } = require("./factories/studentFactory");
 
 let token;
+let ownerId;
 
 beforeEach(async () => {
   await prisma.student.deleteMany();
@@ -15,6 +16,7 @@ beforeEach(async () => {
   await request(app)
     .post("/auth/register")
     .send(user);
+  ownerId = (await prisma.user.findUnique({ where: { email: user.email } })).id;
 
   const loginResponse = await request(app)
     .post("/auth/login")
@@ -28,10 +30,32 @@ afterAll(async () => {
 });
 
 describe("Student Endpoints", () => {
+  it("isolates student records between accounts", async () => {
+    const other = makeUser();
+    await request(app).post("/auth/register").send(other);
+    const otherId = (await prisma.user.findUnique({ where: { email: other.email } })).id;
+    const otherStudent = await prisma.student.create({
+      data: { ...makeStudent(), ownerId: otherId },
+    });
+
+    const list = await request(app).get("/students").set("Authorization", `Bearer ${token}`);
+    const get = await request(app).get(`/students/${otherStudent.id}`).set("Authorization", `Bearer ${token}`);
+    const update = await request(app).put(`/students/${otherStudent.id}`)
+      .set("Authorization", `Bearer ${token}`).send({ age: 10 });
+    const remove = await request(app).delete(`/students/${otherStudent.id}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(list.body).toEqual([]);
+    expect(get.statusCode).toBe(404);
+    expect(update.statusCode).toBe(404);
+    expect(remove.statusCode).toBe(404);
+    expect(await prisma.student.findUnique({ where: { id: otherStudent.id } })).not.toBeNull();
+  });
+
   describe("GET /students", () => {
     it("should return all students", async () => {
       await prisma.student.create({
-        data: makeStudent(),
+        data: { ...makeStudent(), ownerId },
       });
 
       const response = await request(app)
@@ -57,7 +81,7 @@ describe("Student Endpoints", () => {
   describe("GET /students/:id", () => {
     it("should return one student", async () => {
       const student = await prisma.student.create({
-        data: makeStudent({ name: "Maria", age: 16 }),
+        data: { ...makeStudent({ name: "Maria", age: 16 }), ownerId },
       });
 
       const response = await request(app)
@@ -93,7 +117,7 @@ describe("Student Endpoints", () => {
 
   describe("PUT and DELETE /students/:id", () => {
     it("should update a student", async () => {
-      const student = await prisma.student.create({ data: makeStudent() });
+      const student = await prisma.student.create({ data: { ...makeStudent(), ownerId } });
       const response = await request(app)
         .put(`/students/${student.id}`)
         .set("Authorization", `Bearer ${token}`)
@@ -118,7 +142,7 @@ describe("Student Endpoints", () => {
     });
 
     it("should delete a student", async () => {
-      const student = await prisma.student.create({ data: makeStudent() });
+      const student = await prisma.student.create({ data: { ...makeStudent(), ownerId } });
       const response = await request(app)
         .delete(`/students/${student.id}`)
         .set("Authorization", `Bearer ${token}`);

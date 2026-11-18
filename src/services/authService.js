@@ -53,14 +53,19 @@ class AuthService {
       throw error;
     }
 
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret.length < 32) {
+      throw new Error("JWT_SECRET must contain at least 32 characters");
+    }
+
     const token = jwt.sign(
       {
         id: user.id,
         email: user.email,
       },
-      process.env.JWT_SECRET,
+      secret,
       {
-        expiresIn: process.env.JWT_EXPIRES_IN,
+        expiresIn: process.env.JWT_EXPIRES_IN || "1d",
       }
     );
 

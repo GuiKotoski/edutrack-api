@@ -1,14 +1,10 @@
-const { faker } = require("@faker-js/faker");
+const { randomUUID } = require("node:crypto");
 
 function makeTeacher(overrides = {}) {
+  const id = randomUUID().slice(0, 8);
   return {
-    name: faker.person.fullName(),
-    subject: faker.helpers.arrayElement([
-      "Mathematics",
-      "Science",
-      "History",
-      "Portuguese",
-    ]),
+    name: `Teacher ${id}`,
+    subject: "Mathematics",
     ...overrides,
   };
 }

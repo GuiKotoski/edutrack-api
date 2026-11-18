@@ -1,53 +1,58 @@
 const prisma = require("../config/prisma");
 
-const getAllTeachers = async () => {
-  return prisma.teacher.findMany();
+const getAllTeachers = async (ownerId) => {
+  return prisma.teacher.findMany({ where: { ownerId } });
 };
 
-const getTeacherById = async (id) => {
+const getTeacherById = async (id, ownerId) => {
   return prisma.teacher.findUnique({
     where: {
       id: Number(id),
+      ownerId,
     },
     include: {
-      students: true,
+      students: { where: { ownerId } },
     },
   });
 };
 
-const createTeacher = async ({ name, subject }) => {
+const createTeacher = async ({ name, subject }, ownerId) => {
   return prisma.teacher.create({
     data: {
       name,
       subject,
+      ownerId,
     },
   });
 };
 
-const updateTeacher = async (id, data) => {
+const updateTeacher = async (id, data, ownerId) => {
   return prisma.teacher.update({
     where: {
       id: Number(id),
+      ownerId,
     },
     data,
   });
 };
 
-const deleteTeacher = async (id) => {
+const deleteTeacher = async (id, ownerId) => {
   return prisma.teacher.delete({
     where: {
       id: Number(id),
+      ownerId,
     },
   });
 };
 
-const getTeacherStudents = async (id) => {
+const getTeacherStudents = async (id, ownerId) => {
   const teacher = await prisma.teacher.findUnique({
     where: {
       id: Number(id),
+      ownerId,
     },
     include: {
-      students: true,
+      students: { where: { ownerId } },
     },
   });
 
@@ -60,13 +65,11 @@ const getTeacherStudents = async (id) => {
   return teacher.students;
 };
 
-const addStudentToTeacher = async (
-  teacherId,
-  studentData
-) => {
+const addStudentToTeacher = async (teacherId, studentData, ownerId) => {
   const teacher = await prisma.teacher.findUnique({
     where: {
       id: Number(teacherId),
+      ownerId,
     },
   });
 
@@ -81,6 +84,7 @@ const addStudentToTeacher = async (
       name: studentData.name,
       age: Number(studentData.age),
       teacherId: Number(teacherId),
+      ownerId,
     },
   });
 };
