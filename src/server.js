@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 
 const PORT = process.env.PORT || 3000;
 const jwtSecret = process.env.JWT_SECRET;
-const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "1d";
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "15m";
 
 if (!jwtSecret || jwtSecret.length < 32) {
   throw new Error("JWT_SECRET must be configured with at least 32 characters");

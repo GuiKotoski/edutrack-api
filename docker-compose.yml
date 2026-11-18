@@ -38,8 +38,8 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:?Defina POSTGRES_USER no .env}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:?Defina POSTGRES_DB no .env}?schema=public
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
-      REQUIRE_HTTPS: ${REQUIRE_HTTPS:-false}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      REQUIRE_HTTPS: ${REQUIRE_HTTPS:-true}
     ports:
       - "127.0.0.1:${API_PORT:-3001}:3000"
     depends_on:

@@ -5,7 +5,7 @@ function makeUser(overrides = {}) {
   return {
     name: `Test User ${id.slice(0, 8)}`,
     email: `user-${id}@example.com`,
-    password: "123456",
+    password: "SenhaSegura123",
     ...overrides,
   };
 }

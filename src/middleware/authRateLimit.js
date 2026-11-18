@@ -34,11 +34,9 @@ function authRateLimit(req, res, next) {
     return res.status(429).json({ message: "Too many authentication attempts" });
   }
 
-  res.on("finish", () => {
-    if (res.statusCode === 400 || res.statusCode === 401) {
-      entry.count += 1;
-    }
-  });
+  // Count every attempt, including successful registrations and logins.
+  // Otherwise an attacker can create unlimited accounts with valid requests.
+  entry.count += 1;
 
   return next();
 }

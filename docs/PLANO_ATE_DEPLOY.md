@@ -200,7 +200,11 @@ Containerizar a aplicação e documentar como executá-la localmente com seus se
 
 **Objetivo:** proteger os dados acadêmicos e preparar a aplicação para um deploy seguro. Não publicar o EduTrack com dados reais até concluir e validar este escopo.
 
-**Estado:** controles de ownership, autenticação e rate limit implementados; migration aplicada e 38 testes passaram no ambiente local. A imagem de runtime da API separa o CLI do Prisma e reportou zero vulnerabilidades no build. A auditoria completa ainda aponta uma cadeia alta `prisma@6 → @prisma/config → deepmerge-ts` (contada em 3 entradas) e 19 moderadas na árvore de desenvolvimento. A tarefa de migration continua contendo o CLI vulnerável, mas roda isolada, sem porta pública e apenas com código revisado. A sprint continua aberta até validar os controles operacionais na hospedagem.
+**Estado:** ownership e autenticação estão implementados nas rotas de professores e alunos. O rate limit foi ajustado para contabilizar todas as solicitações de cadastro e login, incluindo as bem-sucedidas; cadastro exige senha com pelo menos 12 caracteres e o padrão de expiração do JWT é 15 minutos. No Compose, HTTPS é exigido por padrão, enquanto `.env.example` mantém a opção HTTP explícita para desenvolvimento local. A suíte de testes já havia passado antes destes ajustes; ela ainda precisa ser executada novamente para validar esta revisão.
+
+A auditoria executada em 2026-11-18 encontrou zero vulnerabilidades no lockfile isolado da imagem runtime. A auditoria do lockfile completo apontou 3 entradas altas ligadas à cadeia `prisma@6 → @prisma/config → deepmerge-ts` e 19 moderadas, concentradas nas dependências de desenvolvimento. A tarefa de migration contém o CLI e deve continuar isolada, sem porta pública, com execução controlada. Repetir a auditoria antes de cada publicação.
+
+A Sprint 11.5 permanece aberta até a hospedagem validar HTTPS, armazenamento de segredos, banco privado, rate limit compartilhado se houver múltiplas instâncias, backups criptografados e restauração. Também faltam decisões documentadas sobre minimização, acesso e retenção dos dados de alunos, logs de auditoria e resposta a incidentes. Não usar dados reais até esses itens serem concluídos.
 
 #### Risco residual aceito para desenvolvimento
 
@@ -208,7 +212,7 @@ O alerta [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx
 
 **Controles compensatórios:** o CLI não está na imagem que serve requisições; a imagem de runtime foi auditada sem vulnerabilidades; a tarefa de migration não expõe portas e acessa o banco pela rede privada do Compose. Não usar a imagem de migration como serviço público nem processar configuração Prisma não revisada. Reavaliar este risco antes de qualquer deploy com dados reais ou quando houver correção compatível com Prisma 6.
 
-**Responsável pela revisão:** mantenedor do projeto. **Prazo:** antes da Sprint 12 — Deploy.
+**Responsável pela revisão:** mantenedor do projeto. **Prazo:** antes de disponibilizar o serviço com dados reais. A Sprint 12 pode preparar a infraestrutura e validar o deploy sem dados reais enquanto esses controles são concluídos.
 
 **Escopo:**
 

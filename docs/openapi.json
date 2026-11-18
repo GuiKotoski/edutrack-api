@@ -31,7 +31,7 @@
         "summary": "Cadastrar usuário",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterInput" }, "example": { "name": "Ana Souza", "email": "ana@example.com", "password": "senha123" } } }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterInput" }, "example": { "name": "Ana Souza", "email": "ana@example.com", "password": "senhaSegura123" } } }
         },
         "responses": {
           "201": { "description": "Usuário cadastrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
@@ -210,7 +210,7 @@
     },
     "schemas": {
       "Status": { "type": "object", "required": ["message"], "properties": { "message": { "type": "string", "example": "EduTrack API Online" } } },
-      "RegisterInput": { "type": "object", "required": ["name", "email", "password"], "properties": { "name": { "type": "string", "minLength": 3, "example": "Ana Souza" }, "email": { "type": "string", "format": "email", "example": "ana@example.com" }, "password": { "type": "string", "minLength": 6, "example": "senha123" } } },
+      "RegisterInput": { "type": "object", "required": ["name", "email", "password"], "properties": { "name": { "type": "string", "minLength": 3, "example": "Ana Souza" }, "email": { "type": "string", "format": "email", "example": "ana@example.com" }, "password": { "type": "string", "minLength": 12, "maxLength": 72, "example": "senhaSegura123" } } },
       "LoginInput": { "type": "object", "required": ["email", "password"], "properties": { "email": { "type": "string", "format": "email", "example": "ana@example.com" }, "password": { "type": "string", "minLength": 6, "example": "senha123" } } },
       "User": { "type": "object", "required": ["id", "name", "email"], "properties": { "id": { "type": "integer", "example": 1 }, "name": { "type": "string", "example": "Ana Souza" }, "email": { "type": "string", "format": "email", "example": "ana@example.com" } } },
       "Token": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string", "description": "JWT para uso como Bearer token", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." } } },

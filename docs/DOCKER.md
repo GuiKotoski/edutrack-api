@@ -13,7 +13,7 @@ Na raiz do repositório, crie seu arquivo local de configuração sem sobrescrev
 cp .env.example .env
 ```
 
-Edite `.env` e substitua `JWT_SECRET` por um segredo aleatório. Por exemplo, gere um com `openssl rand -base64 32`. Se alterar `POSTGRES_PASSWORD`, use apenas letras, números e `-._~`, pois a senha também é inserida na URL de conexão do Prisma. As credenciais de banco de exemplo servem apenas para desenvolvimento local.
+Edite `.env` e substitua `JWT_SECRET` por um segredo aleatório. Por exemplo, gere um com `openssl rand -base64 32`. Se alterar `POSTGRES_PASSWORD`, use apenas letras, números e `-._~`, pois a senha também é inserida na URL de conexão do Prisma. As credenciais de banco de exemplo servem apenas para desenvolvimento local. O exemplo define `REQUIRE_HTTPS=false` para facilitar o uso local; não mantenha esse valor em produção.
 
 Inicie os serviços:
 
@@ -21,7 +21,7 @@ Inicie os serviços:
 docker compose up --build
 ```
 
-O Compose aguarda o PostgreSQL ficar saudável e executa o serviço temporário `migrate` com `prisma migrate deploy`. Só depois da conclusão das migrations inicia a API, cuja imagem contém apenas dependências de runtime. Por padrão, a API fica disponível em `http://localhost:3001`; a documentação Swagger UI, em `http://localhost:3001/docs`.
+O Compose aguarda o PostgreSQL ficar saudável e executa o serviço temporário `migrate` com `prisma migrate deploy`. Só depois da conclusão das migrations inicia a API, cuja imagem contém apenas dependências de runtime. Para o uso local descrito aqui, mantenha `REQUIRE_HTTPS=false`; a API fica disponível em `http://localhost:3001` e a documentação Swagger UI em `http://localhost:3001/docs`. Sem essa configuração, o padrão de produção exige HTTPS.
 
 Para executar em segundo plano:
 
@@ -58,10 +58,10 @@ O `.env` é ignorado pelo Git e pelo Docker build. Não use os valores de exempl
 ## Preparação para produção
 
 - configure `JWT_SECRET` com pelo menos 32 caracteres aleatórios e guarde-o, junto das credenciais do banco, no gerenciador de segredos da hospedagem;
-- configure `JWT_EXPIRES_IN` com uma duração curta adequada à aplicação;
-- defina `REQUIRE_HTTPS=true` somente quando a API estiver atrás de um proxy que encaminhe corretamente o protocolo HTTPS;
+- configure `JWT_EXPIRES_IN` com uma duração curta adequada à aplicação (o padrão agora é `15m`);
+- mantenha `REQUIRE_HTTPS=true` em produção e configure o proxy da hospedagem para encaminhar corretamente o protocolo HTTPS; o Compose também exige HTTPS por padrão;
 - execute migrations como uma tarefa de implantação controlada; o CLI do Prisma fica na etapa de migration e não na imagem da API;
 - mantenha o banco em rede privada e configure backups criptografados; teste periodicamente a restauração;
-- a limitação de tentativas de autenticação deste processo é local à instância. Use um armazenamento compartilhado de rate limit antes de executar várias instâncias da API.
+- o limite de 10 solicitações por IP a cada 15 minutos inclui tentativas de cadastro e login, inclusive as bem-sucedidas. Ele é local ao processo; mantenha uma única instância até configurar um armazenamento compartilhado de rate limit.
 
 A migration de propriedade mantém registros antigos com `ownerId` vazio. Eles não aparecem nas rotas autenticadas; associe-os a uma conta por um processo administrativo controlado antes de voltar a utilizá-los.

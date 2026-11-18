@@ -46,7 +46,7 @@ describe("Authentication", () => {
 
     const response = await request(app)
       .post("/auth/register")
-      .send(makeUser({ email: user.email, password: "654321" }));
+      .send(makeUser({ email: user.email, password: "OutraSenha456" }));
 
     expect(response.statusCode).toBe(400);
   });
