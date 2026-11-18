@@ -1,0 +1,225 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "EduTrack API",
+    "version": "1.0.0",
+    "description": "API REST para acompanhamento acadêmico, professores e alunos. Os endpoints de professores e alunos requerem autenticação JWT."
+  },
+  "servers": [{ "url": "/", "description": "Servidor atual" }],
+  "tags": [
+    { "name": "Status" },
+    { "name": "Autenticação" },
+    { "name": "Professores" },
+    { "name": "Alunos" }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Status"],
+        "summary": "Verificar se a API está online",
+        "responses": {
+          "200": {
+            "description": "API disponível",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Status" }, "example": { "message": "EduTrack API Online" } } }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Cadastrar usuário",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterInput" }, "example": { "name": "Ana Souza", "email": "ana@example.com", "password": "senha123" } } }
+        },
+        "responses": {
+          "201": { "description": "Usuário cadastrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Autenticar e obter token JWT",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginInput" }, "example": { "email": "ana@example.com", "password": "senha123" } } }
+        },
+        "responses": {
+          "200": { "description": "Login realizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Token" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/teachers": {
+      "get": {
+        "tags": ["Professores"],
+        "summary": "Listar professores",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de professores", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Teacher" } } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Professores"],
+        "summary": "Cadastrar professor",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "$ref": "#/components/requestBodies/TeacherInput" },
+        "responses": {
+          "201": { "description": "Professor cadastrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Teacher" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/teachers/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": {
+        "tags": ["Professores"],
+        "summary": "Buscar professor e seus alunos",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Professor encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeacherWithStudents" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "description": "Professor não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "message": "Teacher not found" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Professores"],
+        "summary": "Atualizar professor",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "$ref": "#/components/requestBodies/TeacherUpdate" },
+        "responses": {
+          "200": { "description": "Professor atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Teacher" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Professores"],
+        "summary": "Remover professor",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "204": { "description": "Professor removido" },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/teachers/{id}/students": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": {
+        "tags": ["Professores"],
+        "summary": "Listar alunos de um professor",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Alunos associados ao professor", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Student" } } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "post": {
+        "tags": ["Professores"],
+        "summary": "Cadastrar aluno para um professor",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "$ref": "#/components/requestBodies/StudentInput" },
+        "responses": {
+          "201": { "description": "Aluno associado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Student" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/students": {
+      "get": {
+        "tags": ["Alunos"],
+        "summary": "Listar alunos",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de alunos", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Student" } } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Alunos"],
+        "summary": "Cadastrar aluno sem associação a professor",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "$ref": "#/components/requestBodies/StudentInput" },
+        "responses": {
+          "201": { "description": "Aluno cadastrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Student" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/students/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": {
+        "tags": ["Alunos"],
+        "summary": "Buscar aluno",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Aluno encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Student" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "description": "Aluno não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "message": "Student not found" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Alunos"],
+        "summary": "Atualizar aluno",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "$ref": "#/components/requestBodies/StudentUpdate" },
+        "responses": {
+          "200": { "description": "Aluno atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Student" } } } },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Alunos"],
+        "summary": "Remover aluno",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "204": { "description": "Aluno removido" },
+          "400": { "$ref": "#/components/responses/ValidationError" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT", "description": "Informe o token retornado por POST /auth/login." }
+    },
+    "parameters": {
+      "Id": { "name": "id", "in": "path", "required": true, "description": "Identificador numérico positivo do recurso.", "schema": { "type": "integer", "minimum": 1 }, "example": 1 }
+    },
+    "requestBodies": {
+      "TeacherInput": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeacherInput" }, "example": { "name": "Carlos Silva", "subject": "Mathematics" } } } },
+      "TeacherUpdate": { "required": true, "description": "Informe pelo menos um campo.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeacherUpdate" }, "example": { "subject": "Biology" } } } },
+      "StudentInput": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StudentInput" }, "example": { "name": "Maria Souza", "age": 16 } } } },
+      "StudentUpdate": { "required": true, "description": "Informe pelo menos um campo.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StudentUpdate" }, "example": { "age": 17 } } } }
+    },
+    "responses": {
+      "BadRequest": { "description": "Dados inválidos ou e-mail já cadastrado", "content": { "application/json": { "schema": { "oneOf": [{ "$ref": "#/components/schemas/ValidationError" }, { "$ref": "#/components/schemas/Error" }] }, "examples": { "invalidInput": { "value": { "message": "Validation failed", "errors": [{ "path": ["name"], "message": "Nome deve ter pelo menos 3 caracteres", "code": "too_small" }] } }, "duplicateEmail": { "value": { "message": "Email already registered" } } } } } },
+      "ValidationError": { "description": "Dados inválidos ou ID fora do formato esperado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationError" }, "example": { "message": "Validation failed", "errors": [{ "path": ["name"], "message": "Nome deve ter pelo menos 3 caracteres", "code": "too_small" }] } } } },
+      "Unauthorized": { "description": "Token JWT ausente ou credenciais de login inválidas", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "message": "Token required" } } } },
+      "Forbidden": { "description": "Token JWT inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "message": "Invalid token" } } } },
+      "NotFound": { "description": "Recurso não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "message": "Resource not found" } } } },
+      "Conflict": { "description": "Conflito de unicidade", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "message": "Resource already exists" } } } }
+    },
+    "schemas": {
+      "Status": { "type": "object", "required": ["message"], "properties": { "message": { "type": "string", "example": "EduTrack API Online" } } },
+      "RegisterInput": { "type": "object", "required": ["name", "email", "password"], "properties": { "name": { "type": "string", "minLength": 3, "example": "Ana Souza" }, "email": { "type": "string", "format": "email", "example": "ana@example.com" }, "password": { "type": "string", "minLength": 6, "example": "senha123" } } },
+      "LoginInput": { "type": "object", "required": ["email", "password"], "properties": { "email": { "type": "string", "format": "email", "example": "ana@example.com" }, "password": { "type": "string", "minLength": 6, "example": "senha123" } } },
+      "User": { "type": "object", "required": ["id", "name", "email"], "properties": { "id": { "type": "integer", "example": 1 }, "name": { "type": "string", "example": "Ana Souza" }, "email": { "type": "string", "format": "email", "example": "ana@example.com" } } },
+      "Token": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string", "description": "JWT para uso como Bearer token", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." } } },
+      "TeacherInput": { "type": "object", "required": ["name", "subject"], "properties": { "name": { "type": "string", "minLength": 3, "example": "Carlos Silva" }, "subject": { "type": "string", "minLength": 3, "example": "Mathematics" } } },
+      "TeacherUpdate": { "type": "object", "minProperties": 1, "properties": { "name": { "type": "string", "minLength": 3 }, "subject": { "type": "string", "minLength": 3 } } },
+      "Teacher": { "allOf": [{ "$ref": "#/components/schemas/TeacherInput" }, { "type": "object", "required": ["id", "createdAt"], "properties": { "id": { "type": "integer", "example": 1 }, "createdAt": { "type": "string", "format": "date-time" } } }] },
+      "TeacherWithStudents": { "allOf": [{ "$ref": "#/components/schemas/Teacher" }, { "type": "object", "required": ["students"], "properties": { "students": { "type": "array", "items": { "$ref": "#/components/schemas/Student" } } } }] },
+      "StudentInput": { "type": "object", "required": ["name", "age"], "properties": { "name": { "type": "string", "minLength": 3, "example": "Maria Souza" }, "age": { "type": "integer", "minimum": 1, "maximum": 120, "example": 16 } } },
+      "StudentUpdate": { "type": "object", "minProperties": 1, "properties": { "name": { "type": "string", "minLength": 3 }, "age": { "type": "integer", "minimum": 1, "maximum": 120 } } },
+      "Student": { "allOf": [{ "$ref": "#/components/schemas/StudentInput" }, { "type": "object", "required": ["id", "teacherId", "createdAt"], "properties": { "id": { "type": "integer", "example": 1 }, "teacherId": { "type": "integer", "nullable": true, "example": 2 }, "createdAt": { "type": "string", "format": "date-time" } } }] },
+      "Error": { "type": "object", "required": ["message"], "properties": { "message": { "type": "string" } } },
+      "ValidationError": { "type": "object", "required": ["message", "errors"], "properties": { "message": { "type": "string", "example": "Validation failed" }, "errors": { "type": "array", "items": { "type": "object", "required": ["path", "message", "code"], "properties": { "path": { "type": "array", "items": { "type": "string" } }, "message": { "type": "string" }, "code": { "type": "string" } } } } } }
+    }
+  }
+}

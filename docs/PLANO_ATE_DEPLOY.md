@@ -164,7 +164,7 @@ CRUD completo:
 
 ## Roadmap de sprints
 
-> **Sprint atual: 10 — Swagger/OpenAPI**
+> **Sprint atual: 11 — Docker**
 
 ### Sprint 8 — Zod e tratamento de erros ✅ Concluída
 
@@ -188,11 +188,11 @@ CRUD completo:
 
 **Objetivo:** cobrir os fluxos principais e os cenários de erro. Meta inicial: pelo menos 80% de cobertura. A suíte alcançou 95,94% de statements e 96,31% de linhas.
 
-### Sprint 10 — Swagger/OpenAPI ⏳ Planejada
+### Sprint 10 — Swagger/OpenAPI ✅ Concluída
 
-Documentar os endpoints, parâmetros, respostas e exemplos de uso da API.
+Documentar os endpoints, parâmetros, respostas e exemplos de uso da API. A especificação está em `docs/openapi.json`, disponível em `/openapi.json`, com Swagger UI em `/docs`.
 
-### Sprint 11 — Docker ⏳ Planejada
+### Sprint 11 — Docker 🔄 Próxima
 
 Containerizar a aplicação e documentar como executá-la localmente com seus serviços necessários.
 

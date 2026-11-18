@@ -9,6 +9,8 @@ const studentRoutes = require(
   "./routes/studentRoutes"
 );
 const errorHandler = require("./middleware/errorHandler");
+const swaggerUi = require("swagger-ui-express");
+const openapiDocument = require("../docs/openapi.json");
 
 const app = express();
 
@@ -19,6 +21,11 @@ app.get("/", (req, res) => {
     message: "EduTrack API Online",
   });
 });
+
+app.get("/openapi.json", (req, res) => res.json(openapiDocument));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiDocument, {
+  customSiteTitle: "EduTrack API — Swagger UI",
+}));
 
 app.use("/teachers", teacherRoutes);
 app.use("/students", studentRoutes);
