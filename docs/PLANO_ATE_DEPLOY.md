@@ -164,7 +164,7 @@ CRUD completo:
 
 ## Roadmap de sprints
 
-> **Sprint atual: 11 — Docker**
+> **Sprint atual: 12 — Deploy**
 
 ### Sprint 8 — Zod e tratamento de erros ✅ Concluída
 
@@ -192,11 +192,11 @@ CRUD completo:
 
 Documentar os endpoints, parâmetros, respostas e exemplos de uso da API. A especificação está em `docs/openapi.json`, disponível em `/openapi.json`, com Swagger UI em `/docs`.
 
-### Sprint 11 — Docker 🔄 Próxima
+### Sprint 11 — Docker ✅ Concluída
 
-Containerizar a aplicação e documentar como executá-la localmente com seus serviços necessários.
+Containerizar a aplicação e documentar como executá-la localmente com seus serviços necessários. As instruções estão em `docs/DOCKER.md`; Docker Compose inicia a API e PostgreSQL.
 
-### Sprint 12 — Deploy ⏳ Planejada
+### Sprint 12 — Deploy 🔄 Próxima
 
 Publicar a API e o banco de dados em uma plataforma de hospedagem.
 
